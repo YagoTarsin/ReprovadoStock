@@ -1,89 +1,54 @@
-import asyncio
-import csv
-import discord
-from discord.ext import commands
+import pandas as pd
 
-intents = discord.Intents.default()
-intents.typing = False
-intents.presences = False
-intents.members = True
-intents.message_content = True
+def adicionar(nome_produto, quantidade_adicional, preco=None, tipo_produto=None):
+    # Verifica se o tipo de produto é válido
+    tipos_validos = ['Desktop', 'Notebook', 'Video game', 'Smartphone']
+    if tipo_produto not in tipos_validos:
+        print('Tipo de produto inválido!')
+        return
 
-bot = commands.Bot(command_prefix='!', intents=intents)
+    # Carrega o arquivo CSV do estoque completo
+    df_estoque = pd.read_csv('produtos/estoque.csv')
 
+    # Verifica se o produto já existe no estoque completo
+    filtro_estoque = df_estoque['Produto'] == nome_produto
+    if filtro_estoque.any():
+        # Atualiza a quantidade do produto no estoque completo
+        df_estoque.loc[filtro_estoque, 'Quantidade'] += quantidade_adicional
 
-@bot.event
-async def on_ready():
-    print('Logged on as {0}!'.format(bot.user))
+        # Verifica se um novo preço foi fornecido
+        if preco is not None:
+            # Converte o preço para float e atualiza no estoque completo
+            preco = float(preco)
+            df_estoque.loc[filtro_estoque, 'Preço'] = preco
+    else:
+        # Cria um novo registro para o produto no estoque completo
+        novo_registro = {'Produto': nome_produto, 'Quantidade': quantidade_adicional, 'Preço': preco}
+        df_estoque = df_estoque.append(novo_registro, ignore_index=True)
 
+    # Salva o estoque completo de volta no arquivo CSV
+    df_estoque.to_csv('produtos/estoque.csv', index=False)
 
-@bot.command()
-async def produtos(ctx):
-    message = await ctx.send("**Selecione o tipo de produto que está interessado.**\n\n"
-                             "💻 - Laptops       📱 - Smartphones\n\n"
-                             "🖥️ - Desktops      🎮 - Video Games\n\n\n"
-                             "-----------------------------------"
-                             )
+    # Verifica se o tipo de produto foi fornecido
+    if tipo_produto is not None:
+        # Carrega o arquivo CSV do tipo de produto
+        df_tipo_produto = pd.read_csv(f'produtos/{tipo_produto}.csv')
 
-    await message.add_reaction("💻")  # Laptop
-    await message.add_reaction("📱")  # Smartphone
-    await message.add_reaction("🖥️")  # Desktop Computer
-    await message.add_reaction("🎮")  # Game Console
+        # Verifica se o produto já existe no tipo de produto
+        filtro_tipo_produto = df_tipo_produto['Produto'] == nome_produto
+        if filtro_tipo_produto.any():
+            # Verifica se um novo preço foi fornecido
+            if preco is not None:
+                # Converte o preço para float e atualiza no tipo de produto
+                preco = float(preco)
+                df_tipo_produto.loc[filtro_tipo_produto, 'Preço'] = preco
+        else:
+            # Cria um novo registro para o produto no tipo de produto
+            novo_registro = {'Produto': nome_produto, 'Preço': preco}
+            df_tipo_produto = df_tipo_produto.append(novo_registro, ignore_index=True)
 
-    produtos_eletronicos = [
-        "💻 Laptop",
-        "📱 Smartphone",
-        "🖥️ Desktop",
-        "🎮 Video game",
-    ]
+        # Salva o tipo de produto de volta no arquivo CSV
+        df_tipo_produto.to_csv(f'produtos/{tipo_produto}.csv', index=False)
 
-    def check(reaction, user):
-        return user == ctx.author and str(reaction.emoji) in [produto.split()[0] for produto in produtos_eletronicos]
-
-    async def mostrar_produtos(ctx, arquivo):
-        await ctx.send(f'-----------------------------------'
-                       f'\n\n**Aqui estão alguns produtos presentes em nosso estoque:**\n\n'
-                       f'↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓')
-
-        with open(f'produtos/{arquivo}.csv', 'r', newline='', encoding='utf-8') as arquivo_csv:
-            leitor_csv = csv.DictReader(arquivo_csv)
-            produtos = []
-            cont = 1
-            for linha in leitor_csv:
-                produto = linha['Produto']
-                preco = linha['Preço']
-                linha_texto = f"{produto} - R$ {preco}"
-                produtos.append(linha_texto)
-                await ctx.send(f'{cont} - {linha_texto}')
-                cont += 1
-
-        def check_mensagem(mensagem):
-            return mensagem.author == ctx.author and mensagem.channel == ctx.channel
-
-        try:
-            mensagem_escolha = await bot.wait_for('message', check=check_mensagem, timeout=60)
-            escolha = int(mensagem_escolha.content)
-            if 1 <= escolha <= len(produtos):
-                produto_escolhido = produtos[escolha - 1]
-                await ctx.send(f"Você escolheu: {produto_escolhido}")
-            else:
-                await ctx.send("Opção inválida.")
-        except asyncio.TimeoutError:
-            await ctx.send("Tempo limite excedido. Nenhuma resposta foi recebida.")
-        except ValueError:
-            await ctx.send("Escolha inválida. Digite o número correspondente ao produto.")
-
-    try:
-        reaction, user = await bot.wait_for("reaction_add", check=check)
-        if str(reaction.emoji) == "💻":
-            await mostrar_produtos(ctx, 'laptops')
-        elif str(reaction.emoji) == "📱":
-            await mostrar_produtos(ctx, 'celulares')
-        elif str(reaction.emoji) == "🖥️":
-            await mostrar_produtos(ctx, 'desktop')
-        elif str(reaction.emoji) == "🎮":
-            await mostrar_produtos(ctx, 'video_games')
-    except Exception as e:
-        print(f"Ocorreu um erro: {e}")
-
-bot.run('MTEwODc1NTUzNzc2NTYwMTQxMg.GY28_I.JLAavgd5JRtGeGkIYAywX74xzhtUCUoqukhhIs')
+# Exemplo de uso da função adicionar
+adicionar('Desktop Computer HP Pavilion Gaming', 5, '1399.99', 'Desktop')

@@ -1,6 +1,7 @@
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QMainWindow, QAction, QTextEdit, QLineEdit, QLabel, QPushButton, QComboBox
 from Processamentos import estoque
+import rascunho
 import csv
 
 
@@ -8,7 +9,7 @@ class Adc(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle('Adicionar Item')
-        self.setGeometry(100, 100, 403, 230)
+        self.setGeometry(100, 100, 403, 270)
         self.setMaximumSize(403, 670)
 
         icone = QIcon('Imagens/icone.png')
@@ -43,11 +44,21 @@ class Adc(QMainWindow):
         self.quantidade_edit.setFixedSize(230, 30)
         self.quantidade_edit.setStyleSheet('font-size: 17px')
 
+        self.preco = QLabel('Preço:', self)
+        self.preco.move(30, 180)
+        self.preco.setFixedWidth(150)
+        self.preco.setStyleSheet('font-size: 20px')
+
+        self.preco_edit = QLineEdit(self)
+        self.preco_edit.move(100, 180)
+        self.preco_edit.setFixedSize(280, 30)
+        self.preco_edit.setStyleSheet('font-size: 17px')
+
         def Salvar():
-            pass
+            rascunho.adicionar(self.nome_edit.text(), int(self.quantidade_edit.text()), self.preco_edit.text(), 'Desktop')
 
         ok_button = QPushButton('OK', self)
-        ok_button.move(30, 170)
+        ok_button.move(30, 220)
         ok_button.setFixedSize(350, 30)
         ok_button.clicked.connect(Salvar)
 
