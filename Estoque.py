@@ -16,14 +16,11 @@ class MostrarEstoque(QMainWindow):
         icone = QIcon('Imagens/icone.png')
         self.setWindowIcon(icone)
 
-        # Cria uma tabela com 3 colunas
-        self.table = QTableWidget()
-        self.table.setColumnCount(3)
+        self.table = QTableWidget()  # cria tabela
+        self.table.setColumnCount(3)  # tabela com 3 colunas
 
-        # Adiciona cabeçalhos para as colunas
-        self.table.setHorizontalHeaderLabels(['Produto', 'Quantidade', 'Preço/R$'])
+        self.table.setHorizontalHeaderLabels(['Produto', 'Quantidade', 'Preço/R$'])  # cabeçalhos
 
-        # Lê os dados do arquivo CSV
         with open('produtos/estoque.csv', newline='', encoding='UTF-8') as csvfile:
             reader = csv.reader(csvfile, delimiter=',', quotechar='"')
             for linha in reader:
@@ -36,4 +33,3 @@ class MostrarEstoque(QMainWindow):
                         self.table.setItem(self.table.rowCount() - 1, i, item)
         self.setCentralWidget(self.table)
         self.table.setEditTriggers(QAbstractItemView.NoEditTriggers)
-

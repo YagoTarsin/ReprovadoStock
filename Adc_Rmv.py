@@ -1,8 +1,7 @@
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QMainWindow, QAction, QTextEdit, QLineEdit, QLabel, QPushButton, QComboBox
-from Processamentos import estoque
-import rascunho
+from PyQt5.QtWidgets import QMainWindow, QLineEdit, QLabel, QPushButton, QComboBox
 import csv
+import Processamentos
 
 
 class Adc(QMainWindow):
@@ -10,7 +9,8 @@ class Adc(QMainWindow):
         super().__init__()
         self.setWindowTitle('Adicionar Item')
         self.setGeometry(100, 100, 403, 270)
-        self.setMaximumSize(403, 670)
+        self.setMinimumSize(403, 270)
+        self.setMaximumSize(403, 270)
 
         icone = QIcon('Imagens/icone.png')
         self.setWindowIcon(icone)
@@ -55,7 +55,16 @@ class Adc(QMainWindow):
         self.preco_edit.setStyleSheet('font-size: 17px')
 
         def Salvar():
-            rascunho.adicionar(self.nome_edit.text(), int(self.quantidade_edit.text()), self.preco_edit.text(), 'Desktop')
+            try:
+                Processamentos.adicionar(
+                    self.nome_edit.text(),
+                    int(self.quantidade_edit.text()),
+                    self.preco_edit.text(),
+                    self.combobox.currentText()
+                )
+
+            except:
+                print('ERROR')
 
         ok_button = QPushButton('OK', self)
         ok_button.move(30, 220)
@@ -103,7 +112,13 @@ class Rmv(QMainWindow):
         self.quantidade_edit.setStyleSheet('font-size: 17px')
 
         def Salvar():
-            pass
+            try:
+                Processamentos.remover(
+                    self.combobox.currentText(),
+                    int(self.quantidade_edit.text()),
+                )
+            except:
+                print('ERROR')
 
         ok_button = QPushButton('OK', self)
         ok_button.move(30, 130)
@@ -119,6 +134,3 @@ class Rmv(QMainWindow):
             for linha in leitor_csv:
                 nome = linha[0]  # Nome está na primeira coluna do CSV
                 self.combobox.addItem(nome)
-
-
-
