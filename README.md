@@ -110,5 +110,8 @@ Para selecionar o produto interessado, digite o número correspondente ao produt
 
 Obs: Existe um delay de 5 segundos para selecionar o produto interessado, uma falha que não deu tempo de contornar até o fim do prazo do trabalho.
 
+## Considerações finais
+
+Um programa simples que pode ser atualizado com o tempo, depois de toda a explicação está pronto para usar e modificar o app
 
 
